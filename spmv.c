@@ -115,6 +115,12 @@ int main(int argc, char *argv[])
   //
   // Sparse computation using CSPARSE
   //
+  timestamp(&start);
+
+  CSPARSE(size, mat, vec, mysol);
+
+  timestamp(&now);
+  printf("Time taken by my dense matrix - vector product: %ld ms\n", diff_milli(&start, &now));
 
   //
   // Your own sparse implementation
