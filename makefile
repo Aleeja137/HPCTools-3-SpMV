@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O2 -Wall -Wextra
-LDLIBS=-lgslcblas
+LDLIBS=-lgsl -lgslcblas
 
 SRC=spmv.c my_dense.c my_sparse.c timer.c
 OBJ=$(SRC:.c=.o)

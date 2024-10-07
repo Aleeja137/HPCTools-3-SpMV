@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <gsl/gsl_cblas.h>      // CBLAS in GSL (the GNU Scientific Library)
-//#include <gsl/gsl_spmatrix.h>
-//#include <gsl/gsl_vector.h>
+#include <gsl/gsl_spmatrix.h>
+#include <gsl/gsl_vector.h>
 #include "timer.h"
 #include "spmv.h"
 
@@ -121,10 +121,21 @@ int main(int argc, char *argv[])
 
   // Convert mat to a sparse format: CSR
   // Use the gsl_spmatrix struct as datatype
+    // First initialize like a 'dense' matrix (nzmax = size*size) and then compress as CSR
+  gsl_spmatrix *smat_coo = gsl_spmatrix_alloc_nzmax(size, size, size*size, GSL_SPMATRIX_COO);
+  for (i=0; i<size; i++)
+    for(j=0; j<size; j++)
+      if (mat[i*size+j]!=0)
+        gsl_spmatrix_set(smat_coo, i, j, mat[i*size+j]);
 
+  gsl_spmatrix *smat_csr = gsl_spmatrix_compress(smat_coo, GSL_SPMATRIX_CSR);
+
+  size_t nz_elements = gsl_spmatrix_nnz(smat_csr);
+  printf("Non zero elements %ld\n", nz_elements);
   //
   // Sparse computation using GSL's sparse algebra functions
   //
+
 
   //
   // Your own sparse implementation
@@ -138,6 +149,8 @@ int main(int argc, char *argv[])
   free(vec);
   free(refsol);
   free(mysol);
+  gsl_spmatrix_free(smat_csr);
+  gsl_spmatrix_free(smat_coo);
 
   return 0;
 }
