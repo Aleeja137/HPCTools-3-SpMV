@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
   else
     printf("Result is wrong!\n");
 
-
+ 
   //
   // Let's try now SpMV: Sparse Matrix - Dense Vector computation
   //
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
   // First initialize like a 'dense' matrix (nzmax = size*size) with COO format, and then compress as CSR
   gsl_vector *gsl_vec = gsl_vector_alloc(size);
   gsl_vector *gsl_vec_result = gsl_vector_alloc(size);
-  gsl_vector *gsl_vec_result_mine = gsl_vector_alloc(size);
+  gsl_vector *gsl_vec_result_mine = gsl_vector_calloc(size);
   gsl_spmatrix *smat_coo = gsl_spmatrix_alloc_nzmax(size, size, size*size, GSL_SPMATRIX_COO);
 
   for (i=0; i<size; i++)

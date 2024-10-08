@@ -5,16 +5,9 @@
 
 int my_sparse(size_t n, gsl_spmatrix *mat, gsl_vector *vec, gsl_vector *result)
 {
-  // mat->nz
-  // mat->data[k]
-  // mat->p[k]
-  // mat->i[k]
-
   size_t i;
   int j, row, col;
   int n_elem_row, n_elem_total = 0;
-  
-
 
   for(i=0; i<n; i++)
   {
@@ -31,6 +24,7 @@ int my_sparse(size_t n, gsl_spmatrix *mat, gsl_vector *vec, gsl_vector *result)
       double vec_element = gsl_vector_get(vec, col);
       double mat_element = gsl_spmatrix_get(mat, row, col);
       double result_element = gsl_vector_get(result, row);
+      // This works since gsl_vector_calloc initializes vector to zero, otherwise an initial set whould be done
       result_element += mat_element * vec_element;
       gsl_vector_set(result, row, result_element);
     }
