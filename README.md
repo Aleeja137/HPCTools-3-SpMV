@@ -1,6 +1,6 @@
 # HPC Tools - Deliverable 3 - SpMV  
   
-This code compares the performance of well established linear algebra library function's (GSL) agains our own implementation. The comparison is done both for dense and spare matrices.  
+This code compares the performance of well established linear algebra library's functions (GSL), against our own implementation. The comparison is done both for dense and sparse matrices.  
   
 The code is based on the skeleton provided by Prof. Emilio Padrón González (https://gitlab.citic.udc.es/emilio.padron/spmv). It is the third graded deliverable on the HPC Tools curse, the first one of the second block.  
   
