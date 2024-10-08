@@ -4,11 +4,15 @@
 #include <gsl/gsl_cblas.h>      // CBLAS in GSL (the GNU Scientific Library)
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_spblas.h>
 #include "timer.h"
 #include "spmv.h"
 
 #define DEFAULT_SIZE 1024
 #define DEFAULT_DENSITY 0.25
+
+// #define DEFAULT_SIZE 4
+// #define DEFAULT_DENSITY 1
 
 unsigned int populate_sparse_matrix(double mat[], unsigned int n, double density, unsigned int seed)
 {
@@ -56,6 +60,19 @@ unsigned int check_result(double ref[], double result[], unsigned int size)
 
   return 1;
 }
+
+unsigned int check_result_gsl(gsl_vector* ref, gsl_vector* result, unsigned int size)
+{
+  for(unsigned int i = 0; i < size; i++) {
+    double ref_elem = gsl_vector_get(ref, i);
+    double result_elem = gsl_vector_get(result, i);
+    if (!is_nearly_equal(ref_elem, result_elem))
+      return 0;
+  }
+
+  return 1;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -119,29 +136,44 @@ int main(int argc, char *argv[])
   // Let's try now SpMV: Sparse Matrix - Dense Vector computation
   //
 
-  // Convert mat to a sparse format: CSR
-  // Use the gsl_spmatrix struct as datatype
-    // First initialize like a 'dense' matrix (nzmax = size*size) and then compress as CSR
+  // First initialize like a 'dense' matrix (nzmax = size*size) with COO format, and then compress as CSR
+  gsl_vector *gsl_vec = gsl_vector_alloc(size);
+  gsl_vector *gsl_vec_result = gsl_vector_alloc(size);
+  gsl_vector *gsl_vec_result_mine = gsl_vector_alloc(size);
   gsl_spmatrix *smat_coo = gsl_spmatrix_alloc_nzmax(size, size, size*size, GSL_SPMATRIX_COO);
+
   for (i=0; i<size; i++)
+  {
+    gsl_vector_set(gsl_vec, i, vec[i]);
     for(j=0; j<size; j++)
       if (mat[i*size+j]!=0)
         gsl_spmatrix_set(smat_coo, i, j, mat[i*size+j]);
+  }
 
   gsl_spmatrix *smat_csr = gsl_spmatrix_compress(smat_coo, GSL_SPMATRIX_CSR);
 
-  size_t nz_elements = gsl_spmatrix_nnz(smat_csr);
-  printf("Non zero elements %ld\n", nz_elements);
   //
   // Sparse computation using GSL's sparse algebra functions
   //
-
+  printf("\nSparse computation\n----------------\n");
+  timestamp(&start);
+  gsl_spblas_dgemv(CblasNoTrans, 1.0, smat_csr, gsl_vec, 0.0, gsl_vec_result);
+  timestamp(&now);
+  printf("Time taken by GSL sparse computation: %ld ms\n", diff_milli(&start, &now));
 
   //
   // Your own sparse implementation
   //
+  timestamp(&start);
+  my_sparse(size, smat_csr, gsl_vec, gsl_vec_result_mine);
+  timestamp(&now);
+  printf("Time taken by my sparse matrix-vector product: %ld ms\n", diff_milli(&start, &now));
 
   // Compare times (and computation correctness!)
+  if (check_result_gsl(gsl_vec_result, gsl_vec_result_mine, size) == 1)
+    printf("Result is ok!\n");
+  else
+    printf("Result is wrong!\n");
 
 
   // Free resources
@@ -151,6 +183,9 @@ int main(int argc, char *argv[])
   free(mysol);
   gsl_spmatrix_free(smat_csr);
   gsl_spmatrix_free(smat_coo);
+  gsl_vector_free(gsl_vec);
+  gsl_vector_free(gsl_vec_result);
+  gsl_vector_free(gsl_vec_result_mine);
 
   return 0;
 }

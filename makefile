@@ -7,8 +7,8 @@ OBJ=$(SRC:.c=.o)
 
 
 spmv: $(OBJ)
-	@echo $(OBJ)
-	$(CC) $(CFLAGS) $(LDLIBS) -o $@ $^
+	@$(CC) $(CFLAGS) $(LDLIBS) -o $@ $^
+
 clean:
 	$(RM) $(OBJ) *~
 
